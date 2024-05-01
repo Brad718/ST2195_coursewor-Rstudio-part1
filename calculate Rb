@@ -1,0 +1,33 @@
+# Function to calculate Rb
+calculate_Rb <- function(samples, J) {
+  N <- nrow(samples)
+  Mj <- apply(samples, 1, mean)
+  Vj <- apply(samples, 1, var)
+  W <- mean(Vj)
+  M <- mean(Mj)
+  B <- mean((Mj - M)^2)
+  Rb <- sqrt((B + W) / W)
+  return(Rb)
+}
+
+# Parameters
+N <- 2000
+s_values <- seq(0.001, 1, length.out = 100)
+J <- 4
+Rb_values <- numeric(length(s_values))
+
+for (i in seq_along(s_values)) {
+  s <- s_values[i]
+  chains <- matrix(nrow = N, ncol = J)
+  for (j in 1:J) {
+    samples <- metropolis_hastings(N, s)
+    chains[, j] <- samples[[1]]  # Extract the first element of samples
+  }
+  Rb <- calculate_Rb(chains, J)
+  Rb_values[i] <- Rb
+}
+
+# Plot Rb values over s values
+plot(s_values, Rb_values, type = 'l', col = 'blue', 
+     main = 'Rb Values over s Values', xlab = 's', ylab = 'Rb')
+grid()
