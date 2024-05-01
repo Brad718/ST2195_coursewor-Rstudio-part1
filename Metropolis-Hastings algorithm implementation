@@ -1,0 +1,64 @@
+# Load required library
+library(MASS)
+
+# Define probability density function (PDF)
+f <- function(x) {
+  return(0.5 * exp(-abs(x)))
+}
+
+# Metropolis-Hastings algorithm implementation
+metropolis_hastings <- function(N, s) {
+  # Initialize variables
+  x <- numeric(N)
+  x[1] <- 0  # Initial value
+  accepted <- 0
+  
+  # Iterate over N iterations
+  for (i in 2:N) {
+    # Generate proposal from normal distribution
+    x_star <- rnorm(1, mean = x[i-1], sd = s)
+    
+    # Compute acceptance probability
+    acceptance_prob <- f(x_star) / f(x[i-1])
+    
+    # Generate a uniform random number
+    u <- runif(1)
+    
+    # Accept or reject proposal
+    if (u < acceptance_prob) {
+      x[i] <- x_star
+      accepted <- accepted + 1
+    } else {
+      x[i] <- x[i-1]
+    }
+  }
+  
+  # Calculate acceptance rate
+  acceptance_rate <- accepted / N
+  
+  return(list(samples = x, acceptance_rate = acceptance_rate))
+}
+
+# Parameters
+N <- 10000
+s <- 1
+
+# Generate samples using Metropolis-Hastings algorithm
+result <- metropolis_hastings(N, s)
+samples <- result$samples
+acceptance_rate <- result$acceptance_rate
+
+# Plot histogram and kernel density plot
+hist(samples, breaks = 50, prob = TRUE, col = "lightblue", main = "Histogram and Kernel Density Plot", xlab = "x", ylab = "Density")
+lines(density(samples), col = "red", lwd = 2)
+curve(0.5 * exp(-abs(x)), from = min(samples), to = max(samples), add = TRUE, col = "green", lty = 2, lwd = 2)
+legend("topright", legend = c("Histogram", "Kernel Density Estimation", "True Density Function"), fill = c("lightblue", "red", "green"))
+
+# Monte Carlo estimates
+mean_estimate <- mean(samples)
+std_dev_estimate <- sd(samples)
+cat("Sample Mean:", mean_estimate, "\n")
+cat("Sample Standard Deviation:", std_dev_estimate, "\n")
+cat("Acceptance Rate:", acceptance_rate, "\n")
+
+
